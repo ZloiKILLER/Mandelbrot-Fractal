@@ -4,7 +4,6 @@ import numpy as np
 import time
 from PIL import Image, ImageDraw, ImageFont
 
-# Глобальные переменные
 fullscreen = False
 show_fps = False
 windowed_size = (800, 600)
@@ -16,13 +15,11 @@ fps_counter = 0
 current_fps = 0
 fps_texture = None
 
-# Шрифт
 try:
     font = ImageFont.truetype("arial.ttf", 24)
 except:
     font = ImageFont.load_default()
 
-# Обработка клавиш
 def key_callback(win, key, scancode, action, mods):
     global fullscreen, windowed_size, windowed_pos, window, show_fps
     if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
@@ -43,16 +40,14 @@ def key_callback(win, key, scancode, action, mods):
             glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_NORMAL)
             fullscreen = False
 
-# Инициализация GLFW и контекста
 glfw.init()
 window = glfw.create_window(800, 600, "Mandelbrot", None, None)
 glfw.make_context_current(window)
 glfw.set_key_callback(window, key_callback)
 
 ctx = moderngl.create_context()
-ctx.enable(moderngl.BLEND)  # Для прозрачности текста
+ctx.enable(moderngl.BLEND) 
 
-# Шейдер Mandelbrot
 prog = ctx.program(
     vertex_shader='''
         #version 330
@@ -88,7 +83,6 @@ prog = ctx.program(
     '''
 )
 
-# Прямоугольник на весь экран
 quad = np.array([
     -1.0, -1.0,
      1.0, -1.0,
@@ -100,7 +94,6 @@ quad = np.array([
 vbo = ctx.buffer(quad.tobytes())
 vao = ctx.simple_vertex_array(prog, vbo, 'in_pos')
 
-# Шейдер и VAO для текста
 text_prog = ctx.program(
     vertex_shader='''
         #version 330
@@ -123,8 +116,7 @@ text_prog = ctx.program(
     '''
 )
 
-# Буфер и VAO для overlay, будет перезаписываться каждый кадр
-overlay_vbo = ctx.buffer(reserve=6 * 4 * 4)  # 6 вершин, 4 float (x, y, u, v)
+overlay_vbo = ctx.buffer(reserve=6 * 4 * 4), 4 float (x, y, u, v)
 overlay_vao = ctx.vertex_array(
     text_prog,
     [(overlay_vbo, '2f 2f', 'in_pos', 'in_uv')]
@@ -138,7 +130,6 @@ while not glfw.window_should_close(window):
     ctx.viewport = (0, 0, width, height)
     ctx.clear()
 
-    # Анимация фрактала
     t = time.time() - start_time
     zoom = 0.5 + 0.25 * np.sin(t * 0.5)
     offset_x = -0.5 + 0.3 * np.cos(t * 0.2)
@@ -156,7 +147,6 @@ while not glfw.window_should_close(window):
     prog['base_color'].value = tuple(color)
     vao.render()
 
-    # Обновляем FPS
     fps_counter += 1
     now = time.time()
     if now - last_fps_time >= 1.0:
@@ -171,12 +161,11 @@ while not glfw.window_should_close(window):
             fps_texture = ctx.texture(img.size, 4, img.tobytes())
             fps_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-    # Отображаем FPS-оверлей
+
     if show_fps and fps_texture:
-        # Размер текста в пикселях
+        
         ow, oh = 256, 64
 
-        # В OpenGL-координаты
         x0 = -1.0
         x1 = -1.0 + 2.0 * ow / width
         y0 = 1.0
